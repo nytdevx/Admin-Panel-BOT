@@ -1,15 +1,3 @@
-#!/usr/bin/env python3
-"""
-Telegram Multi Bot Admin Controller
-====================================
-A professional admin panel to control, monitor, and manage
-multiple Telegram bots from a single interface.
-
-Author  : Multi Bot Admin System
-Version : 2.0.0
-License : MIT
-"""
-
 import os
 import sys
 import time
