@@ -121,7 +121,35 @@ def user_detail_text(telegram_id: str) -> str:
         f"💰 Points: {u['points']}\n"
         f"🎖 Rank: {rank_label(u['points'])}\n"
         f"📊 Status: {status}"
+    )
+
+
+# ─── Command Handlers ────────────────────────────────────────────────────────
+
+async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+
+    # Admin flow
+    if is_admin(update):
+        users     = db.get_all_users()
+        total     = len(users)
+        banned    = sum(1 for u in users if u.get("banned"))
+        total_pts = sum(u["points"] for u in users)
+        await update.message.reply_text(
+            f"🤖 <b>QuizMaster Pro — Admin Panel</b>\n\n"
+            f"👥 Total Users : <b>{total}</b>\n"
+            f"🚫 Banned      : <b>{banned}</b>\n"
+            f"💰 Total Pts   : <b>{total_pts}</b>",
+            parse_mode="HTML",
+            reply_markup=build_main_menu(),
         )
+        return ConversationHandler.END
+
+    # Existing user flow
+    existing = db.get_user(str(user.id))
+    if existing:
+        if existing.get("banned"):
+            await update.message.reply_text("🚫 You have been banned from using this bot.")
             return ConversationHandler.END
         await update.message.reply_text(
             f"👋 Welcome back, <b>{existing['name']}</b>!\n"
@@ -190,10 +218,10 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # ── Main menu ─────────────────────────────────────────────────────────────
     if data in ("main_menu", "refresh_main"):
-        users    = db.get_all_users()
-        total    = len(users)
-        banned   = sum(1 for u in users if u.get("banned"))
-        total_pts= sum(u["points"] for u in users)
+        users     = db.get_all_users()
+        total     = len(users)
+        banned    = sum(1 for u in users if u.get("banned"))
+        total_pts = sum(u["points"] for u in users)
         await query.edit_message_text(
             f"🤖 <b>QuizMaster Pro — Admin Panel</b>\n\n"
             f"👥 Total Users : <b>{total}</b>\n"
@@ -240,11 +268,11 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # ── Ban / Unban ───────────────────────────────────────────────────────────
     elif data.startswith("ban:"):
-        tid      = data.split(":", 1)[1]
+        tid        = data.split(":", 1)[1]
         new_status = db.toggle_ban(tid)
-        action   = "🚫 Banned" if new_status else "🔓 Unbanned"
-        u        = db.get_user(tid)
-        name     = u["name"] if u else tid
+        action     = "🚫 Banned" if new_status else "🔓 Unbanned"
+        u          = db.get_user(tid)
+        name       = u["name"] if u else tid
         await query.edit_message_text(
             f"{action}: <b>{name}</b>\n\n" + user_detail_text(tid),
             parse_mode="HTML",
@@ -256,7 +284,6 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         tid  = data.split(":", 1)[1]
         u    = db.get_user(tid)
         name = u["name"] if u else tid
-        # Confirm keyboard
         confirm_kb = InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("✅ Yes, Delete", callback_data=f"confirm_delete:{tid}"),
@@ -286,7 +313,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # ── Add / Remove / Set points ─────────────────────────────────────────────
     elif data.startswith(("addpts:", "subpts:", "setpts:")):
-        action, tid       = data.split(":", 1)
+        action, tid               = data.split(":", 1)
         context.user_data["pts_action"] = action
         context.user_data["pts_target"] = tid
         prompts = {
@@ -352,7 +379,6 @@ def main():
 
     app = Application.builder().token(BOT_TOKEN).build()
 
-    # Conversation handler covering both registration and point editing
     conv = ConversationHandler(
         entry_points=[CommandHandler("start", cmd_start)],
         states={
@@ -361,7 +387,7 @@ def main():
             ],
             STATE_SET_POINTS: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_set_points),
-                CallbackQueryHandler(handle_callback),  # allow "Cancel" button
+                CallbackQueryHandler(handle_callback),
             ],
         },
         fallbacks=[CommandHandler("start", cmd_start)],
@@ -377,3 +403,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
