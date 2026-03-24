@@ -1,2 +1,4 @@
-pyTelegramBotAPI>=4.18.0
-psutil>=5.9.0
+pyTelegramBotAPI
+Flask
+Flask-CORS
+gunicorn
