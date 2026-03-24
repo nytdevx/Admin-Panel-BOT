@@ -27,7 +27,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # ─── Config ─────────────────────────────────────────────────────────────────
-BOT_TOKEN2   = os.environ.get("BOT_TOKEN2", "")
+BOT_TOKEN   = os.environ.get("BOT_TOKEN2", "")
 ADMIN_ID    = int(os.environ.get("ADMIN_ID", "0"))
 
 # ─── Conversation states ─────────────────────────────────────────────────────
@@ -112,10 +112,16 @@ def user_detail_text(telegram_id: str) -> str:
     u = db.get_user(telegram_id)
     if not u:
         return "❌ User not found."
+
     status = "🚫 BANNED" if u.get("banned") else "✅ Active"
+
     return (
-        f".get("banned"):
-            await update.message.reply_text("🚫 You are banned from QuizMaster Pro.")
+        f"👤 Name: {u['name']}\n"
+        f"🆔 ID: {telegram_id}\n"
+        f"💰 Points: {u['points']}\n"
+        f"🎖 Rank: {rank_label(u['points'])}\n"
+        f"📊 Status: {status}"
+        )
             return ConversationHandler.END
         await update.message.reply_text(
             f"👋 Welcome back, <b>{existing['name']}</b>!\n"
