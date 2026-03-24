@@ -27,7 +27,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # ─── Config ─────────────────────────────────────────────────────────────────
-BOT_TOKEN2   = os.environ.get("BOT_TOKEN", "")
+BOT_TOKEN2   = os.environ.get("BOT_TOKEN2", "")
 ADMIN_ID    = int(os.environ.get("ADMIN_ID", "0"))
 
 # ─── Conversation states ─────────────────────────────────────────────────────
