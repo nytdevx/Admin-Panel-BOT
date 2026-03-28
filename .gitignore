@@ -1,0 +1,14 @@
+# Secrets
+.env
+
+# Database (auto-created at runtime)
+*.db
+*.sqlite3
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
